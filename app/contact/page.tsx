@@ -1,16 +1,51 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { SiteHeader } from "../components/SiteHeader";
 import styles from "./page.module.css";
 
 const DEFAULT_EMAIL = "hello@cultscribe.example";
 
+const easeOut = [0.22, 1, 0.36, 1] as const;
+
 export default function ContactPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const reduceMotion = useReducedMotion();
+
+  const parent = useMemo(
+    () => ({
+      hidden: {},
+      show: {
+        transition: {
+          staggerChildren: reduceMotion ? 0 : 0.1,
+          delayChildren: reduceMotion ? 0 : 0.06,
+        },
+      },
+    }),
+    [reduceMotion],
+  );
+
+  const child = useMemo(
+    () => ({
+      hidden: reduceMotion
+        ? { opacity: 0 }
+        : { opacity: 0, y: 20, filter: "blur(8px)" },
+      show: {
+        opacity: 1,
+        y: 0,
+        filter: "blur(0px)",
+        transition: {
+          duration: reduceMotion ? 0.01 : 0.62,
+          ease: easeOut,
+        },
+      },
+    }),
+    [reduceMotion],
+  );
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -27,15 +62,29 @@ export default function ContactPage() {
       <SiteHeader />
       <div className={styles.glow} aria-hidden />
       <div className={styles.page}>
-        <div className={styles.content}>
-          <span className={styles.eyebrow}>Get in touch</span>
-          <h1 className={styles.title}>Let&apos;s write the next page</h1>
-          <p className={styles.lead}>
+        <motion.div
+          className={styles.content}
+          variants={parent}
+          initial="hidden"
+          animate="show"
+        >
+          <motion.span className={styles.eyebrow} variants={child}>
+            Get in touch
+          </motion.span>
+          <motion.h1 className={styles.title} variants={child}>
+            Let&apos;s write the next page
+          </motion.h1>
+          <motion.p className={styles.lead} variants={child}>
             Wholesales, custom drops, or questions about the collection—send a
             note. We read every message.
-          </p>
+          </motion.p>
 
-          <form className={styles.block} onSubmit={handleSubmit} noValidate>
+          <motion.form
+            className={styles.block}
+            onSubmit={handleSubmit}
+            noValidate
+            variants={child}
+          >
             <p className={styles.hint}>
               Sends your message through your default email app. You can also
               write to{" "}
@@ -87,12 +136,14 @@ export default function ContactPage() {
             <button className={styles.submit} type="submit">
               Send message
             </button>
-          </form>
+          </motion.form>
 
-          <Link className={styles.back} href="/">
-            ← Back to home
-          </Link>
-        </div>
+          <motion.div variants={child}>
+            <Link className={styles.back} href="/">
+              ← Back to home
+            </Link>
+          </motion.div>
+        </motion.div>
       </div>
     </>
   );

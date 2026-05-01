@@ -41,6 +41,8 @@ const NOTEBOOKS = [
   },
 ] as const;
 
+const EASE_OUT = [0.22, 1, 0.36, 1] as const;
+
 export default function Home() {
   const reduceMotion = useReducedMotion();
 
@@ -57,17 +59,19 @@ export default function Home() {
     [reduceMotion],
   );
 
-  const fadeUp = useMemo(
+  /** Hero: blur clears + soft rise */
+  const blurFadeUp = useMemo(
     () => ({
       hidden: reduceMotion
         ? { opacity: 0 }
-        : { opacity: 0, y: 18 },
+        : { opacity: 0, y: 22, filter: "blur(12px)" },
       show: {
         opacity: 1,
         y: 0,
+        filter: "blur(0px)",
         transition: {
-          duration: reduceMotion ? 0.01 : 0.62,
-          ease: [0.22, 1, 0.36, 1] as const,
+          duration: reduceMotion ? 0.01 : 0.72,
+          ease: EASE_OUT,
         },
       },
     }),
@@ -78,18 +82,57 @@ export default function Home() {
     () => ({
       hidden: reduceMotion
         ? { opacity: 0 }
-        : { opacity: 0, scaleX: 0 },
+        : { opacity: 0, scaleX: 0, filter: "blur(6px)" },
       show: {
         opacity: 1,
         scaleX: 1,
+        filter: "blur(0px)",
         transition: {
-          duration: reduceMotion ? 0.01 : 0.75,
-          ease: [0.22, 1, 0.36, 1] as const,
+          duration: reduceMotion ? 0.01 : 0.8,
+          ease: EASE_OUT,
         },
       },
     }),
     [reduceMotion],
   );
+
+  /** Scroll-in sections: staggered blur fade */
+  const inViewParent = useMemo(
+    () => ({
+      hidden: {},
+      show: {
+        transition: {
+          staggerChildren: reduceMotion ? 0 : 0.11,
+          delayChildren: reduceMotion ? 0 : 0.04,
+        },
+      },
+    }),
+    [reduceMotion],
+  );
+
+  const inViewChild = useMemo(
+    () => ({
+      hidden: reduceMotion
+        ? { opacity: 0 }
+        : { opacity: 0, y: 26, filter: "blur(8px)" },
+      show: {
+        opacity: 1,
+        y: 0,
+        filter: "blur(0px)",
+        transition: {
+          duration: reduceMotion ? 0.01 : 0.68,
+          ease: EASE_OUT,
+        },
+      },
+    }),
+    [reduceMotion],
+  );
+
+  const inViewViewport = {
+    once: true,
+    margin: "-72px 0px -48px 0px",
+    amount: 0.2,
+  } as const;
 
   return (
     <>
@@ -106,7 +149,7 @@ export default function Home() {
           <div className={styles.heroGlow} aria-hidden />
           <div className={styles.heroGrid} aria-hidden />
 
-          <motion.div className={styles.logoWrap} variants={fadeUp}>
+          <motion.div className={styles.logoWrap} variants={blurFadeUp}>
             <Image
               src="/logo.png"
               alt="CultScribe — Raw. Real. Written."
@@ -117,7 +160,7 @@ export default function Home() {
             />
           </motion.div>
 
-          <motion.p className={styles.heroEst} variants={fadeUp}>
+          <motion.p className={styles.heroEst} variants={blurFadeUp}>
             Analog soul · Hand-finished spirit
           </motion.p>
 
@@ -127,15 +170,15 @@ export default function Home() {
             aria-hidden
           />
 
-          <motion.h1 className={styles.tagline} variants={fadeUp}>
+          <motion.h1 className={styles.tagline} variants={blurFadeUp}>
             Where <span>legends</span> live forever
           </motion.h1>
-          <motion.p className={styles.heroSub} variants={fadeUp}>
+          <motion.p className={styles.heroSub} variants={blurFadeUp}>
             Notebooks that honor the timeless spirit of rock and metal—born from
             a love of musical history, built for students and creators who refuse
             generic stationery.
           </motion.p>
-          <motion.div className={styles.ctaRow} variants={fadeUp}>
+          <motion.div className={styles.ctaRow} variants={blurFadeUp}>
             <a className={`${styles.btn} ${styles.btnPrimary}`} href="#notebooks">
               Explore notebooks
             </a>
@@ -143,7 +186,7 @@ export default function Home() {
               Our story
             </a>
           </motion.div>
-          <motion.p className={styles.scrollHint} variants={fadeUp}>
+          <motion.p className={styles.scrollHint} variants={blurFadeUp}>
             Scroll
           </motion.p>
         </motion.section>
@@ -152,13 +195,30 @@ export default function Home() {
           className={styles.posterSection}
           aria-labelledby="poster-showcase-title"
         >
-          <div className={styles.posterSectionInner}>
-            <span className={styles.posterEyebrow}>The art</span>
-            <h2 id="poster-showcase-title" className={styles.posterTitle}>
+          <motion.div
+            className={styles.posterSectionInner}
+            variants={inViewParent}
+            initial="hidden"
+            whileInView="show"
+            viewport={inViewViewport}
+          >
+            <motion.span
+              className={styles.posterEyebrow}
+              variants={inViewChild}
+            >
+              The art
+            </motion.span>
+            <motion.h2
+              id="poster-showcase-title"
+              className={styles.posterTitle}
+              variants={inViewChild}
+            >
               Covers that hit like classic posters
-            </h2>
-            <PosterSlider ariaLabelledBy="poster-showcase-title" />
-          </div>
+            </motion.h2>
+            <motion.div variants={inViewChild}>
+              <PosterSlider ariaLabelledBy="poster-showcase-title" />
+            </motion.div>
+          </motion.div>
         </section>
 
         <section
@@ -166,46 +226,70 @@ export default function Home() {
           id="identity"
           aria-labelledby="identity-title"
         >
-          <div className={styles.sectionHeader}>
-            <span className={styles.eyebrow}>Brand identity</span>
-            <h2 id="identity-title" className={styles.title}>
+          <motion.div
+            className={styles.sectionHeader}
+            variants={inViewParent}
+            initial="hidden"
+            whileInView="show"
+            viewport={inViewViewport}
+          >
+            <motion.span className={styles.eyebrow} variants={inViewChild}>
+              Brand identity
+            </motion.span>
+            <motion.h2
+              id="identity-title"
+              className={styles.title}
+              variants={inViewChild}
+            >
               Write boldly. Think freely.
-            </h2>
-            <p className={styles.lead}>
+            </motion.h2>
+            <motion.p className={styles.lead} variants={inViewChild}>
               CultScribe fuses design with the stories behind the bands you grew up
               on—The Beatles, Pink Floyd, Guns N’ Roses, Led Zeppelin, Metallica,
               and the legends still echoing in your headphones. This isn’t filler
               merch: every cover is treated as a piece of cultural history, and every
               page is a companion for notes, lyrics, dreams, and sketches.
-            </p>
-          </div>
+            </motion.p>
+          </motion.div>
 
-          <div className={styles.brandBlock}>
-            <p className={styles.lead} style={{ marginTop: 0, maxWidth: "none" }}>
+          <motion.div
+            className={styles.brandBlock}
+            variants={inViewParent}
+            initial="hidden"
+            whileInView="show"
+            viewport={inViewViewport}
+          >
+            <motion.p
+              className={styles.lead}
+              style={{ marginTop: 0, maxWidth: "none" }}
+              variants={inViewChild}
+            >
               We stand against flat, forgettable notebooks. We’re for rebellion,
               creativity, timeless art, and music culture—stamped into something you
               can hold, flip through, and fill.
-            </p>
-            <blockquote className={styles.quote}>
+            </motion.p>
+            <motion.blockquote className={styles.quote} variants={inViewChild}>
               Every cover is a piece of cultural history—a place where your own
               voice joins the story.
-            </blockquote>
-            <div
+            </motion.blockquote>
+            <motion.div
               className={styles.essenceGrid}
               role="list"
               aria-label="Brand essence"
+              variants={inViewParent}
             >
               {ESSENCE.map((word) => (
-                <div
+                <motion.div
                   className={styles.essenceCard}
                   key={word}
                   role="listitem"
+                  variants={inViewChild}
                 >
                   {word}
-                </div>
+                </motion.div>
               ))}
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </section>
 
         <LedgerSection />
@@ -216,50 +300,95 @@ export default function Home() {
             style={{ maxWidth: 1200, margin: "0 auto" }}
             aria-labelledby="notebooks-title"
           >
-            <div className={styles.sectionHeader}>
-              <span className={styles.eyebrow}>The collection</span>
-              <h2 id="notebooks-title" className={styles.title}>
+            <motion.div
+              className={styles.sectionHeader}
+              variants={inViewParent}
+              initial="hidden"
+              whileInView="show"
+              viewport={inViewViewport}
+            >
+              <motion.span className={styles.eyebrow} variants={inViewChild}>
+                The collection
+              </motion.span>
+              <motion.h2
+                id="notebooks-title"
+                className={styles.title}
+                variants={inViewChild}
+              >
                 Notebooks like album art
-              </h2>
-              <p className={styles.lead}>
+              </motion.h2>
+              <motion.p className={styles.lead} variants={inViewChild}>
                 A gallery of covers and formats—tuned for the way you create. When
                 you share final names, paper specs, and price points, we can swap
                 these cards for your real lineup.
-              </p>
-            </div>
-            <div className={styles.cards}>
+              </motion.p>
+            </motion.div>
+            <motion.div
+              className={styles.cards}
+              variants={inViewParent}
+              initial="hidden"
+              whileInView="show"
+              viewport={inViewViewport}
+            >
               {NOTEBOOKS.map((item) => (
-                <article className={styles.card} key={item.id}>
+                <motion.article
+                  className={styles.card}
+                  key={item.id}
+                  variants={inViewChild}
+                >
                   <span className={styles.cardNum}>Series {item.id}</span>
                   <h3 className={styles.cardTitle}>{item.title}</h3>
                   <p className={styles.cardDesc}>{item.description}</p>
                   <p className={styles.cardTag}>{item.note}</p>
-                </article>
+                </motion.article>
               ))}
-            </div>
+            </motion.div>
           </section>
         </div>
 
-        <section
+        <motion.section
           className={styles.footerCta}
           aria-label="Call to action"
+          variants={inViewParent}
+          initial="hidden"
+          whileInView="show"
+          viewport={inViewViewport}
         >
-          <h2 className={styles.title} style={{ fontSize: "2rem" }}>
+          <motion.h2
+            className={styles.title}
+            style={{ fontSize: "2rem" }}
+            variants={inViewChild}
+          >
             Your story. Your pages.
-          </h2>
-          <p>
+          </motion.h2>
+          <motion.p variants={inViewChild}>
             Drop your notebook details, imagery, and links when you’re ready—we’ll
             wire them into this layout so the page stays as bold as the brand.
-          </p>
-          <Link className={`${styles.btn} ${styles.btnPrimary}`} href="/contact">
-            Get in touch
-          </Link>
-        </section>
+          </motion.p>
+          <motion.div variants={inViewChild}>
+            <Link className={`${styles.btn} ${styles.btnPrimary}`} href="/contact">
+              Get in touch
+            </Link>
+          </motion.div>
+        </motion.section>
 
-        <footer className={styles.footer} role="contentinfo">
+        <motion.footer
+          className={styles.footer}
+          role="contentinfo"
+          initial={
+            reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12, filter: "blur(6px)" }
+          }
+          whileInView={
+            reduceMotion
+              ? { opacity: 1 }
+              : { opacity: 1, y: 0, filter: "blur(0px)" }
+          }
+          viewport={{ once: true, amount: 0.35 }}
+          transition={{ duration: reduceMotion ? 0.01 : 0.55, ease: EASE_OUT }}
+        >
           <span>CultScribe</span> — Where legends live forever
           <small>Raw. Real. Written. · Inspired by the spirit of rock &amp; metal</small>
-        </footer>
+        </motion.footer>
       </main>
     </>
   );
