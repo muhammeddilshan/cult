@@ -5,7 +5,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import styles from "./PosterSlider.module.css";
 
-const SLIDES = [
+export type PosterSliderSlide = {
+  src: string;
+  alt: string;
+};
+
+const DEFAULT_SLIDES: readonly PosterSliderSlide[] = [
   {
     src: "/page1.png",
     alt: "CultScribe poster — Guns N’ Roses inspired artwork with GNR Was Here headline.",
@@ -18,7 +23,7 @@ const SLIDES = [
     src: "/page3.png",
     alt: "CultScribe poster — Ozzy Osbourne inspired Prince of Darkness artwork.",
   },
-] as const;
+];
 
 const AUTOPLAY_MS = 7000;
 
@@ -47,15 +52,28 @@ function ChevronRight() {
 type PosterSliderProps = {
   /** Visible heading id on the page (carousel accessible name). */
   ariaLabelledBy: string;
+  /** Passed to next/image `sizes` when embedded in a narrow column. */
+  imageSizes?: string;
+  /** Override default poster slides (e.g. brand identity column). */
+  slides?: readonly PosterSliderSlide[];
 };
 
-export function PosterSlider({ ariaLabelledBy }: PosterSliderProps) {
+export function PosterSlider({
+  ariaLabelledBy,
+  imageSizes = "(max-width: 640px) 100vw, 520px",
+  slides: slidesProp,
+}: PosterSliderProps) {
+  const slides = slidesProp ?? DEFAULT_SLIDES;
   const reduceMotion = useReducedMotion();
   const wrapRef = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
 
-  const count = SLIDES.length;
+  const count = slides.length;
+
+  useEffect(() => {
+    setIndex((i) => Math.min(i, Math.max(0, count - 1)));
+  }, [count]);
   const goPrev = useCallback(
     () => setIndex((i) => (i - 1 + count) % count),
     [count],
@@ -121,7 +139,7 @@ export function PosterSlider({ ariaLabelledBy }: PosterSliderProps) {
         aria-live={reduceMotion ? "off" : "polite"}
       >
         <div className={styles.dots} role="tablist" aria-label="Choose slide">
-          {SLIDES.map((_, i) => (
+          {slides.map((_, i) => (
             <button
               key={i}
               type="button"
@@ -161,10 +179,10 @@ export function PosterSlider({ ariaLabelledBy }: PosterSliderProps) {
             transition={transition}
           >
             <Image
-              src={SLIDES[index].src}
-              alt={SLIDES[index].alt}
+              src={slides[index].src}
+              alt={slides[index].alt}
               fill
-              sizes="(max-width: 640px) 100vw, 520px"
+              sizes={imageSizes}
               className={styles.image}
               priority={index === 0}
               draggable={false}

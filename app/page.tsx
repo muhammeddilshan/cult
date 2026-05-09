@@ -5,7 +5,10 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { useMemo } from "react";
 import { LedgerSection } from "./components/LedgerSection";
-import { PosterSlider } from "./components/PosterSlider";
+import {
+  PosterSlider,
+  type PosterSliderSlide,
+} from "./components/PosterSlider";
 import { SiteHeader } from "./components/SiteHeader";
 import styles from "./page.module.css";
 
@@ -24,6 +27,7 @@ const NOTEBOOKS = [
     description:
       "Premium hardcovers with finishes inspired by the era when album art was sacred. Your space for lyrics, riffs, and real ideas.",
     note: "Specs & pricing — coming as you share them",
+    coverSrc: "/page9.jpeg",
   },
   {
     id: "02",
@@ -31,6 +35,7 @@ const NOTEBOOKS = [
     description:
       "Lay-flat pages for sketches, setlists, and setpiece notes. Built for dorms, studios, and late-night writing sessions.",
     note: "Paper weights & sizes — TBD from you",
+    coverSrc: "/page1.png",
   },
   {
     id: "03",
@@ -38,10 +43,34 @@ const NOTEBOOKS = [
     description:
       "Durable, road-ready build—because ideas don’t wait for a desk. Every cover tells a story worth carrying forward.",
     note: "Colorways & limited drops — you define",
+    coverSrc: "/page5.jpeg",
   },
 ] as const;
 
 const EASE_OUT = [0.22, 1, 0.36, 1] as const;
+
+const IDENTITY_SLIDER_SLIDES: readonly PosterSliderSlide[] = [
+  {
+    src: "/page4.jpeg",
+    alt: "Van Halen live on stage — Eddie Van Halen on the Frankenstrat with David Lee Roth, black and white concert photo.",
+  },
+  {
+    src: "/page5.jpeg",
+    alt: "Led Zeppelin with The Starship tour plane — band portrait on the airfield, black and white.",
+  },
+  {
+    src: "/page6.jpeg",
+    alt: "Bob Dylan in the studio with electric guitar, harmonica rack, and cigarette — black and white.",
+  },
+  {
+    src: "/page7.jpeg",
+    alt: "Willie Nelson on stage with Trigger and a spraying beer can — black and white.",
+  },
+  {
+    src: "/page8.jpeg",
+    alt: "AC/DC group portrait — Angus Young in schoolboy outfit with Gibson SG, Bon Scott and band, black and white.",
+  },
+];
 
 export default function Home() {
   const reduceMotion = useReducedMotion();
@@ -226,70 +255,90 @@ export default function Home() {
           id="identity"
           aria-labelledby="identity-title"
         >
-          <motion.div
-            className={styles.sectionHeader}
-            variants={inViewParent}
-            initial="hidden"
-            whileInView="show"
-            viewport={inViewViewport}
-          >
-            <motion.span className={styles.eyebrow} variants={inViewChild}>
-              Brand identity
-            </motion.span>
-            <motion.h2
-              id="identity-title"
-              className={styles.title}
-              variants={inViewChild}
-            >
-              Write boldly. Think freely.
-            </motion.h2>
-            <motion.p className={styles.lead} variants={inViewChild}>
-              CultScribe fuses design with the stories behind the bands you grew up
-              on—The Beatles, Pink Floyd, Guns N’ Roses, Led Zeppelin, Metallica,
-              and the legends still echoing in your headphones. This isn’t filler
-              merch: every cover is treated as a piece of cultural history, and every
-              page is a companion for notes, lyrics, dreams, and sketches.
-            </motion.p>
-          </motion.div>
-
-          <motion.div
-            className={styles.brandBlock}
-            variants={inViewParent}
-            initial="hidden"
-            whileInView="show"
-            viewport={inViewViewport}
-          >
-            <motion.p
-              className={styles.lead}
-              style={{ marginTop: 0, maxWidth: "none" }}
-              variants={inViewChild}
-            >
-              We stand against flat, forgettable notebooks. We’re for rebellion,
-              creativity, timeless art, and music culture—stamped into something you
-              can hold, flip through, and fill.
-            </motion.p>
-            <motion.blockquote className={styles.quote} variants={inViewChild}>
-              Every cover is a piece of cultural history—a place where your own
-              voice joins the story.
-            </motion.blockquote>
-            <motion.div
-              className={styles.essenceGrid}
-              role="list"
-              aria-label="Brand essence"
-              variants={inViewParent}
-            >
-              {ESSENCE.map((word) => (
-                <motion.div
-                  className={styles.essenceCard}
-                  key={word}
-                  role="listitem"
+          <div className={styles.identityGrid}>
+            <div className={styles.identityCopy}>
+              <motion.div
+                className={styles.sectionHeader}
+                variants={inViewParent}
+                initial="hidden"
+                whileInView="show"
+                viewport={inViewViewport}
+              >
+                <motion.span className={styles.eyebrow} variants={inViewChild}>
+                  Brand identity
+                </motion.span>
+                <motion.h2
+                  id="identity-title"
+                  className={styles.title}
                   variants={inViewChild}
                 >
-                  {word}
+                  Write boldly. Think freely.
+                </motion.h2>
+                <motion.p className={styles.lead} variants={inViewChild}>
+                  CultScribe fuses design with the stories behind the bands you grew up
+                  on—The Beatles, Pink Floyd, Guns N’ Roses, Led Zeppelin, Metallica,
+                  and the legends still echoing in your headphones. This isn’t filler
+                  merch: every cover is treated as a piece of cultural history, and every
+                  page is a companion for notes, lyrics, dreams, and sketches.
+                </motion.p>
+              </motion.div>
+
+              <motion.div
+                className={styles.brandBlock}
+                variants={inViewParent}
+                initial="hidden"
+                whileInView="show"
+                viewport={inViewViewport}
+              >
+                <motion.p
+                  className={styles.lead}
+                  style={{ marginTop: 0, maxWidth: "none" }}
+                  variants={inViewChild}
+                >
+                  We stand against flat, forgettable notebooks. We’re for rebellion,
+                  creativity, timeless art, and music culture—stamped into something you
+                  can hold, flip through, and fill.
+                </motion.p>
+                <motion.blockquote className={styles.quote} variants={inViewChild}>
+                  Every cover is a piece of cultural history—a place where your own
+                  voice joins the story.
+                </motion.blockquote>
+                <motion.div
+                  className={styles.essenceGrid}
+                  role="list"
+                  aria-label="Brand essence"
+                  variants={inViewParent}
+                >
+                  {ESSENCE.map((word) => (
+                    <motion.div
+                      className={styles.essenceCard}
+                      key={word}
+                      role="listitem"
+                      variants={inViewChild}
+                    >
+                      {word}
+                    </motion.div>
+                  ))}
                 </motion.div>
-              ))}
+              </motion.div>
+            </div>
+
+            <motion.div
+              className={styles.identitySliderCol}
+              variants={inViewParent}
+              initial="hidden"
+              whileInView="show"
+              viewport={inViewViewport}
+            >
+              <motion.div className={styles.identitySliderShell} variants={inViewChild}>
+                <PosterSlider
+                  ariaLabelledBy="identity-title"
+                  imageSizes="(max-width: 959px) min(100vw - 3rem, 400px), 300px"
+                  slides={IDENTITY_SLIDER_SLIDES}
+                />
+              </motion.div>
             </motion.div>
-          </motion.div>
+          </div>
         </section>
 
         <LedgerSection />
@@ -336,10 +385,25 @@ export default function Home() {
                   key={item.id}
                   variants={inViewChild}
                 >
-                  <span className={styles.cardNum}>Series {item.id}</span>
-                  <h3 className={styles.cardTitle}>{item.title}</h3>
-                  <p className={styles.cardDesc}>{item.description}</p>
-                  <p className={styles.cardTag}>{item.note}</p>
+                  <div className={styles.cardCover} aria-hidden>
+                    <Image
+                      src={item.coverSrc}
+                      alt=""
+                      fill
+                      sizes="(max-width: 639px) 100vw, (max-width: 999px) 50vw, 360px"
+                      className={styles.cardCoverImg}
+                      draggable={false}
+                    />
+                    <div className={styles.cardCoverTint} />
+                    <div className={styles.cardCoverVignette} />
+                    <div className={styles.cardCoverGrain} />
+                  </div>
+                  <div className={styles.cardContent}>
+                    <span className={styles.cardNum}>Series {item.id}</span>
+                    <h3 className={styles.cardTitle}>{item.title}</h3>
+                    <p className={styles.cardDesc}>{item.description}</p>
+                    <p className={styles.cardTag}>{item.note}</p>
+                  </div>
                 </motion.article>
               ))}
             </motion.div>
